@@ -20,7 +20,7 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
-const atlas_url = `mongodb+srv://vibinboi1234:Dln0801@cluster0.jpsxpkk.mongodb.net/?appName=Cluster0`;
+const atlas_url = ``;
 const client = new MongoClient(atlas_url);
 const userCollection = client.db(mongodb_database).collection('users');
 
