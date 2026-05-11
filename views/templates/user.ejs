@@ -1,0 +1,15 @@
+<tr>
+    <td><%= user.name %></td>
+    <td><%= user.email %></td>
+    <td><%= user.user_type %></td>
+    <td>
+        <form action="/updateUser" method="POST" class="d-inline">
+            <input type="hidden" name="email" value="<%= user.email %>">
+            <% if (user.user_type === 'admin') { %>
+                <button name="type" value="user" class="btn btn-warning btn-sm">Demote</button>
+            <% } else { %>
+                <button name="type" value="admin" class="btn btn-success btn-sm">Promote</button>
+            <% } %>
+        </form>
+    </td>
+</tr>

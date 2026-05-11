@@ -1,3 +1,23 @@
 <%- include('templates/header') %>
 
+<div class="px-4 py-5 my-5 text-center">
+    <% if (authenticated) { %>
+        <h1 class="display-5 fw-bold">Hello, <%= name %>!</h1> 
+        <div class="col-lg-6 mx-auto">
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="/members" class="btn btn-primary btn-lg px-4 gap-3">Go to Members Area</a> 
+                <a href="/logout" class="btn btn-outline-secondary btn-lg px-4">Logout</a> 
+            </div>
+        </div>
+    <% } else { %>
+        <h1 class="display-5 fw-bold">Welcome to Assignment 2</h1>
+        <div class="col-lg-6 mx-auto">
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="/signup" class="btn btn-primary btn-lg px-4 gap-3">Sign Up</a> 
+                <a href="/login" class="btn btn-outline-secondary btn-lg px-4">Log In</a> 
+            </div>
+        </div>
+    <% } %>
+</div>
+
 <%- include('templates/footer') %>

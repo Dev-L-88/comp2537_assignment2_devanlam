@@ -1,3 +1,31 @@
 <%- include('templates/header') %>
 
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <main class="form-signup w-100 m-auto py-5">
+            <form action="/signupSubmit" method="POST">
+                <h1 class="h3 mb-3 fw-normal text-center">Create Account</h1>
+
+                <div class="form-floating mb-2">
+                    <input type="text" name="name" class="form-control" id="floatingName" placeholder="Full Name">
+                    <label for="floatingName">Name</label>
+                </div>
+
+                <div class="form-floating mb-2">
+                    <input type="email" name="email" class="form-control" id="floatingEmail" placeholder="name@example.com">
+                    <label for="floatingEmail">Email address</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="password" name="password" class="form-control" id="floatingPassword" placeholder="Password">
+                    <label for="floatingPassword">Password</label>
+                </div>
+
+                <button class="w-100 btn btn-lg btn-primary" type="submit">Sign Up</button>
+            </form>
+            <p class="mt-3 text-center">Already have an account? <a href="/login">Login here</a></p>
+        </main>
+    </div>
+</div>
+
 <%- include('templates/footer') %>

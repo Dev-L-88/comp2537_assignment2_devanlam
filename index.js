@@ -8,6 +8,7 @@ const { MongoClient } = require('mongodb');
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.set('view engine', 'ejs');
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -20,7 +21,7 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 const mongodb_session_secret = process.env.MONGODB_SESSION_SECRET;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
-const atlas_url = ``;
+const atlas_url = `mongodb+srv://vibinboi1234:Dln0801@cluster0.jpsxpkk.mongodb.net/?appName=Cluster0`;
 const client = new MongoClient(atlas_url);
 const userCollection = client.db(mongodb_database).collection('users');
 
@@ -42,36 +43,45 @@ app.use(session({
     }
 }));
 
+function isAuthenticated(req, res, next) {
+    if (req.session.authenticated) {
+        return next();
+    }
+
+    res.redirect('/login');
+}
+
+function isAdmin(req, res, next) {
+    if (req.session.user_type === 'admin') {
+        return next();
+    }
+    res.status(403);
+    res.render("404", { error: "403 - Not Authorized" });
+}
+
 // 1. Home Page
 app.get('/', (req, res) => {
-    if (!req.session.authenticated) {
-        // Not logged in
-        res.send(`
-            <a href='/signup'><button>Sign up</button></a>
-            <a href='/login'><button>Log in</button></a>
-        `);
-    } else {
-        // Logged in
-        res.send(`
-            Hello, ${req.session.name}!
-            <br>
-            <a href='/members'><button>Go to Members Area</button></a>
-            <a href='/logout'><button>Logout</button></a>
-        `);
-    }
+    res.render('index', {
+        authenticated: req.session.authenticated,
+        name: req.session.name
+    });
+});
+
+app.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
+    console.log("Current User Type in Session:", req.session.user_type);
+    const users = await userCollection.find().toArray();
+    res.render('admin', { users: users });
+});
+
+app.post('/updateUser', isAuthenticated, isAdmin, async (req, res) => {
+    const { email, type } = req.body;
+    await userCollection.updateOne({ email: email }, { $set: { user_type: type } });
+    res.redirect('/admin');
 });
 
 // 2. Sign up Page
 app.get('/signup', (req, res) => {
-    res.send(`
-        <h2>Create User </h2>
-        <form action='/signupSubmit' method='post'>
-            <input name='name' type='text' placeholder='name'><br>
-            <input name='email' type='email' placeholder='email'><br>
-            <input name='password' type='password' placeholder='password'><br>
-            <button>Submit</button>
-        </form>
-        `)
+    res.render('signup');
 });
 
 // Try again sign up 
@@ -91,7 +101,13 @@ app.post('/signupSubmit', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await userCollection.insertOne({ name: name, email: email, password: hashedPassword });
+    await userCollection.insertOne({ 
+        name: name, 
+        email: email, 
+        password: hashedPassword,
+    user_type: "user" 
+    });
+    
     req.session.authenticated = true;
     req.session.name = name;
     res.redirect('/members');
@@ -99,14 +115,7 @@ app.post('/signupSubmit', async (req, res) => {
 
 // 3. Login page
 app.get('/login', (req, res) => {
-    res.send(`
-        <h2>Log in</h2>
-        <form action='/loginSubmit' method='post'>
-            <input name='email' type='email' placeholder='email'><br>
-            <input name='password' type='password' placeholder='password'><br>
-            <button>Submit</button>
-        </form>
-    `);
+    res.render('login');
 });
 
 // Try again login 
@@ -125,9 +134,12 @@ app.post('/loginSubmit', async (req, res) => {
     }
 
     const user = await userCollection.findOne({ email: email });
+
     if (user && await bcrypt.compare(password, user.password)) {
         req.session.authenticated = true;
         req.session.name = user.name;
+        req.session.user_type = user.user_type;
+        
         res.redirect('/members');
     } else {
         res.send("Invalid email/password combination. <br> <a href='/login'>Try again</a>");
@@ -135,20 +147,9 @@ app.post('/loginSubmit', async (req, res) => {
 });
 
 // 4. Members Area
-app.get('/members', (req, res) => {
-    if (!req.session.authenticated) {
-        res.redirect('/');
-        return;
-    }
-    
-    const randomImage = Math.floor(Math.random() * 3) + 1;
-    res.send(`
-        <h1>Hello, ${req.session.name}.</h1>
-        <img src='/img${randomImage}.jpg' style='width:250px;'/>
-        <br>
-        <a href='/logout'><button>Sign out</button></a>
-    `);
-});
+app.get('/members', isAuthenticated, (req, res) => {
+    res.render('members', {name: req.session.name});
+});;
 
 // 5. Logout
 app.get('/logout', (req, res) => {
@@ -165,9 +166,9 @@ client.connect().then(() => {
 // 8. 404 Error
 app.get("/:universal", (req, res) => {
     res.status(404);
-    res.send("Page not found - 404");
+    res.render('404');
 });
 
 app.listen(port, () => {
-    console.log("Node application listening on port " + port);
+    console.log("Node application listening on port " + `http://localhost:${port}`);
 });
